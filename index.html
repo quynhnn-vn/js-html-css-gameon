@@ -60,7 +60,6 @@
               name="reserve"
               action="index.html"
               method="get"
-              onsubmit="return validate();"
             >
               <div class="formData">
                 <label for="first">Prénom</label><br>
@@ -236,10 +235,19 @@
                 type="submit"
                 class="button"
                 value="C'est parti"
-                onclick="submitForm()"
               />
             </form>
           </div>
+        </div>
+      </div>
+
+       <div class="alert-bground">
+        <div class="content">
+              <span class="close"></span>
+              <div class="modal-body">
+                <h2>Merci pour <br> votre inscription</h2>
+                <button class="btn-close">Fermer</button>
+              </div>
         </div>
       </div>
     </main>
