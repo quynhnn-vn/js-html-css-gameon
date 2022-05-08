@@ -52,6 +52,19 @@ alertClose.addEventListener("click", () => {
   alertBg.style.display = "none";
 });
 
+/* Set attributes for text inputs */
+[...TEXT_INPUTS, checkboxInput, ...radioInput].forEach((input) => {
+  input.setAttribute("required", "");
+  if (input.type === "text") {
+    input.setAttribute("minLength", "2");
+  } else if (input.type === "email") {
+    input.setAttribute("pattern", ".+@.+..+");
+  } else if (input.type === "number") {
+    input.setAttribute("min", "0");
+    input.setAttribute("max", "99");
+  }
+});
+
 /* Show error message */
 const showErrorMessage = (input) => {
   // Assign message values to inputs
