@@ -25,6 +25,9 @@ const TEXT_INPUTS = [
   birthdayInput,
   quantityInput,
 ];
+const ALL_INPUTS = [...TEXT_INPUTS, checkboxInput, ...radioInput];
+const EMAIL_PATTERN = ".+@.+..+";
+const EMAIL_REGEX = /.+@.+..+/;
 
 /* Set topnav responsive */
 const editNav = () => {
@@ -52,26 +55,31 @@ alertClose.addEventListener("click", () => {
   alertBg.style.display = "none";
 });
 
-/* Set attributes for text inputs */
-[...TEXT_INPUTS, checkboxInput, ...radioInput].forEach((input) => {
+/* Set attributes for inputs */
+ALL_INPUTS.forEach((input) => {
   input.setAttribute("required", "");
   if (input.type === "text") {
     input.setAttribute("minLength", "2");
   } else if (input.type === "email") {
-    input.setAttribute("pattern", ".+@.+..+");
+    input.setAttribute("pattern", EMAIL_PATTERN);
   } else if (input.type === "number") {
     input.setAttribute("min", "0");
     input.setAttribute("max", "99");
   }
 });
 
+/* Check if text is long enough */
+const isLongEnough = (currentLength, minLength) => {
+  return Number(currentLength) >= Number(minLength);
+};
+
 /* Show error message */
 const showErrorMessage = (input) => {
   // Assign message values to inputs
   let message = "";
-  if (input === emailInput) message = "un email valid";
-  else if (input === birthdayInput) message = "une date valide";
-  else if (input === quantityInput) message = "une valeur numérique";
+  if (input.type === "email") message = "un email valid";
+  else if (input.type === "date") message = "une date valide";
+  else if (input.type === "number") message = "une valeur numérique";
   else message = "ce champ avec un minimum de 2 caractères";
 
   // Set attributes to change styles of the invalid input
@@ -101,25 +109,58 @@ const checkValidityBeforeSubmit = (input) => {
 /* Apply checkValidityBeforeSubmit for each text inputs */
 TEXT_INPUTS.forEach((input) => checkValidityBeforeSubmit(input));
 
-/* Check validity and submit form */
-const submitForm = (e) => {
-  e.preventDefault();
+/* Apply checkValidityAfterSubmit for all inputs */
+const checkValidityAfterSubmit = () => {
+  let isValid = [],
+    isValidRadio = false;
 
-  // isValidText = true if every text inputs and checkbox are valid
-  const isValidText = [...TEXT_INPUTS, checkboxInput].every((input) =>
-    input.checkValidity()
-  );
-
-  // isValidRadio = true if at least one radio input is checked
-  let isValidRadio = false;
   for (var i = 0, len = radioInput.length; i < len; i++) {
     if (radioInput[i].checked) {
       isValidRadio = true;
     }
   }
+  isValid.push(isValidRadio);
+
+  [...TEXT_INPUTS, checkboxInput].forEach((input) => {
+    let validationValue = null;
+    switch (input.type) {
+      case "text":
+        validationValue = isLongEnough(input.value.length, 2);
+        break;
+      case "email":
+        validationValue = EMAIL_REGEX.test(
+          String(input.value).toLocaleLowerCase()
+        );
+        break;
+      case "date":
+        validationValue = Boolean(Date.parse(input.value));
+        break;
+      case "number":
+        validationValue = Number(input.value) >= 0 && Number(input.value) <= 99;
+        break;
+      case "checkbox":
+        validationValue = input.checked;
+        break;
+      default:
+        validationValue = input.checked;
+    }
+    isValid.push(validationValue);
+
+    !validationValue && showErrorMessage(input);
+  });
+
+  return isValid.every((element) => element === true);
+};
+
+/* Check validity and submit form */
+const submitForm = (e) => {
+  e.preventDefault();
+
+  // isValidText = true if every text inputs and checkbox are valid
+  let isValidForm = checkValidityAfterSubmit();
 
   // Handle when the form is valid
-  if (isValidText && isValidRadio) {
+  if (isValidForm) {
     // Hide the inscription modal
     modalBg.style.display = "none";
     // Show the confirmation modal
